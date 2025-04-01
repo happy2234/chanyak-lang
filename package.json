@@ -1,0 +1,22 @@
+{
+  "name": "chanyak-lang",
+  "version": "1.0.0",
+  "main": "dist/compiler.js",
+  "bin": {
+    "chanyak": "bin/chanyak.js"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "build": "tsc && chmod +x bin/chanyak.js",
+    "start": "ts-node src/compiler.ts",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@types/node": "^22.13.17",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  }
+}
