@@ -1,14 +1,38 @@
 # Changuage Compiler
 
-[Brief description of your project]
+[![CI Status](https://github.com/happy2234/changuage/actions/workflows/ci.yml/badge.svg)](https://github.com/happy2234/changuage/actions)
+[![License](https://img.shields.io/github/license/happy2234/changuage)](LICENSE)
+[![GitHub Release](https://img.shields.io/github/v/release/happy223/changuage)](https://github.com/happy2234/changuage/releases)
+
+A modern compiler for the Changuage programming language, implemented in TypeScript. Transpiles Changuage code to efficient JavaScript.
 
 ## Features
-- [ ] Feature 1
-- [ ] Feature 2
+
+### Language Features
+- [x] Function declarations with parameters
+- [x] Arithmetic expressions
+- [x] Variable declarations
+- [ ] Type annotations
+- [ ] Control flow (if/else, loops)
+- [ ] Standard library
+
+### Compiler Features
+- [x] Lexical analysis
+- [x] Syntax parsing
+- [x] AST generation
+- [x] JavaScript code emission
+- [ ] Optimization passes
+- [ ] Source maps
 
 ## Getting Started
-```bash
-npm install
-npx ts-node src/compiler.ts examples/hello.chan
-```
 
+### Prerequisites
+- Node.js v18+
+- npm/yarn
+- TypeScript v4.9+
+
+### Installation
+```bash
+git clone https://github.com/YOUR_USERNAME/changuage.git
+cd changuage
+npm install
