@@ -2,7 +2,7 @@
 
 [![CI Status](https://github.com/happy2234/chanyak-lang/actions/workflows/ci.yml/badge.svg)](https://github.com/happy2234/chanyak-lang/actions)
 [![License](https://img.shields.io/github/license/happy2234/chanyak-lang)](LICENSE)
-[![GitHub Release](https://img.shields.io/github/v/release/happy2234/chanyak-lang)](https://github.com/happy2234/chanyak-lang/releases)
+[![GitHub Release Date](https://img.shields.io/github/release-date/happy2234/chanyak-lang)]
 
 A modern compiler for the Changuage programming language, implemented in TypeScript. Transpiles Changuage code to efficient JavaScript.
 
