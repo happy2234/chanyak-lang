@@ -1,0 +1,71 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install Dependencies
+      run: npm ci
+      
+    - name: Run Tests
+      run: npm test
+      env:
+        CI: true
+
+  build:
+    name: Build Verification
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install Dependencies
+      run: npm ci
+      
+    - name: Build Project
+      run: npm run build
+      
+    - name: Verify Examples
+      run: |
+        npx ts-node src/compiler.ts examples/test.chan
+        npx ts-node src/compiler.ts examples/hello.chan
+
+  lint:
+    name: Lint Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install ESLint
+      run: npm install eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin
+      
+    - name: Run Linter
+      run: npx eslint src/**/*.ts --max-warnings=0
