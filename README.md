@@ -1,14 +1,14 @@
 # Changuage Compiler
 
-A modern compiler for the Changuage programming language.
+[Brief description of your project]
 
 ## Features
-- Function declarations
-- Arithmetic operations
-- Variable declarations
-- [Add more...]
+- [ ] Feature 1
+- [ ] Feature 2
 
-## Quick Start
+## Getting Started
 ```bash
 npm install
 npx ts-node src/compiler.ts examples/hello.chan
+```
+
