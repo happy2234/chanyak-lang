@@ -9,14 +9,17 @@
     "dist",
     "bin"
   ],
-  "scripts": {
-    "build": "tsc && chmod +x bin/chanyak.js",
-    "start": "ts-node src/compiler.ts",
+ "scripts": {
+    "build": "tsc",
+    "start": "node bin/chanyak.js compile examples/test.chan",
+    "dev": "ts-node src/compiler.ts examples/test.chan",
     "test": "jest"
   },
-  "dependencies": {
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
     "@types/node": "^22.13.17",
-    "ts-node": "^10.9.2",
+    "commander": "^13.1.0",
+    "jest": "^29.0.0",
     "typescript": "^5.8.2"
   }
 }

@@ -1,19 +1,30 @@
-import { Token } from "./types";export function tokenize(code: string): Token[] {
-    const tokens: Token[] = [];
-    const tokenPatterns = [
-        { type: "comment", pattern: /^\/\/.*|\/\*[\s\S]*?\*\//, skip: true },
-        { type: "whitespace", pattern: /^\s+/, skip: true },
-        { type: "func", pattern: /^func\b/ },
-        { type: "arrow", pattern: /^=>/ },
-        { type: "comma", pattern: /^,/ },
-        { type: "paren", pattern: /^[()]/ },
-        { type: "brace", pattern: /^[{}]/ },
-        { type: "operator", pattern: /^[+\-*/=]/ },
-        { type: "number", pattern: /^\d+/ },
-        { type: "identifier", pattern: /^[a-zA-Z_]\w*/ },
-        { type: "unknown", pattern: /^./ } // Catch-all for debugging
-    ];
+import { Token } from "./types";
 
+const TOKEN_SPEC = [
+    { type: "comment", pattern: /^\/\/.*|\/\*[\s\S]*?\*\//, skip: true },
+    { type: "whitespace", pattern: /^\s+/, skip: true },
+    { type: "if", pattern: /^if\b/ },
+    { type: "else", pattern: /^else\b/ },
+    { type: "return", pattern: /^return\b/ },
+    { type: "print", pattern: /^print\b/ },
+    { type: "let", pattern: /^let\b/ },
+    { type: "number", pattern: /^\d+/ },
+    { type: "string", pattern: /^"[^"]*"/ },
+    { type: "arrow", pattern: /^=>/ },
+    { type: "comma", pattern: /^,/ },
+    { type: "paren", pattern: /^[()]/ },
+    { type: "brace", pattern: /^[{}]/ },
+    { type: "operator", pattern: /^[+\-*/=<>!]=?/ },
+    { type: "semicolon", pattern: /^;/ },
+    { type: "colon", pattern: /^:/ },   // ✅ Added this for type annotations
+    { type: "func", pattern: /^func\b/ },
+    { type: "while", pattern: /^while\b/ },
+    { type: "identifier", pattern: /^[a-zA-Z_][a-zA-Z0-9_]*/ },
+];
+
+
+export function tokenize(code: string): Token[] {
+    const tokens: Token[] = [];
     let remaining = code;
     let line = 1;
     let column = 1;
@@ -21,7 +32,7 @@ import { Token } from "./types";export function tokenize(code: string): Token[] 
     while (remaining.length > 0) {
         let matched = false;
 
-        for (const { type, pattern, skip } of tokenPatterns) {
+        for (const { type, pattern, skip } of TOKEN_SPEC) {
             const match = pattern.exec(remaining);
             if (match && match.index === 0) {
                 if (!skip) {
@@ -34,15 +45,16 @@ import { Token } from "./types";export function tokenize(code: string): Token[] 
                 }
 
                 // Update position tracking
-                const lines = match[0].split('\n');
-                if (lines.length > 1) {
-                    line += lines.length - 1;
-                    column = lines[lines.length - 1].length + 1;
+                const text = match[0];
+                const newlines = text.split('\n').length - 1;
+                if (newlines > 0) {
+                    line += newlines;
+                    column = text.length - text.lastIndexOf('\n');
                 } else {
-                    column += match[0].length;
+                    column += text.length;
                 }
 
-                remaining = remaining.slice(match[0].length);
+                remaining = remaining.slice(text.length);
                 matched = true;
                 break;
             }
@@ -55,31 +67,3 @@ import { Token } from "./types";export function tokenize(code: string): Token[] 
 
     return tokens;
 }
-function getTokenType(value: string): string {
-    if (value === 'func') return 'func';
-    if (value === '=>') return 'arrow';
-    if (value === ',') return 'comma';  // Add this line
-    if (/^[a-zA-Z_]/.test(value)) return 'identifier';
-    if (/^\d/.test(value)) return 'number';
-    if (/^[+\-*\/=]/.test(value)) return 'operator';
-    if (/^[()]/.test(value)) return 'paren';
-    throw new Error(`Unknown token: ${value}`);
-    if (/^\d/.test(value)) return 'number';
-    return 'operator';
-
-}
-// In src/lexer.ts, update the token patterns:
-const TOKEN_SPEC = [
-    { type: "comment", pattern: /^\/\/.*|\/\*[\s\S]*?\*\//, skip: true }, // Skip comments
-    { type: "func", pattern: /^func\b/ },
-    { type: "identifier", pattern: /^[a-zA-Z_]\w*/ },
-    { type: "number", pattern: /^\d+/ },
-    { type: "operator", pattern: /^[+\-*/=]/ },
-    { type: "paren", pattern: /^[()]/ },
-    { type: "brace", pattern: /^[{}]/ },  // Add braces
-    { type: "arrow", pattern: /^=>/ },
-    { type: "comment", pattern: /^\/\/.*|\/\*[\s\S]*?\*\//, skip: true },
-    { type: "whitespace", pattern: /^\s+/, skip: true },
-    { type: "func", pattern: /^func\b/ },
-    { type: "whitespace", pattern: /^\s+/, skip: true }
-  ];

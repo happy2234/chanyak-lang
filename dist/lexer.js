@@ -1,52 +1,63 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.tokenize = tokenize;
+const TOKEN_SPEC = [
+    { type: "comment", pattern: /^\/\/.*|\/\*[\s\S]*?\*\//, skip: true },
+    { type: "whitespace", pattern: /^\s+/, skip: true },
+    { type: "if", pattern: /^if\b/ },
+    { type: "else", pattern: /^else\b/ },
+    { type: "return", pattern: /^return\b/ },
+    { type: "print", pattern: /^print\b/ },
+    { type: "let", pattern: /^let\b/ },
+    { type: "number", pattern: /^\d+/ },
+    { type: "string", pattern: /^"[^"]*"/ },
+    { type: "arrow", pattern: /^=>/ },
+    { type: "comma", pattern: /^,/ },
+    { type: "paren", pattern: /^[()]/ },
+    { type: "brace", pattern: /^[{}]/ },
+    { type: "operator", pattern: /^[+\-*/=<>!]=?/ },
+    { type: "semicolon", pattern: /^;/ },
+    { type: "colon", pattern: /^:/ }, // ✅ Added this for type annotations
+    { type: "func", pattern: /^func\b/ },
+    { type: "while", pattern: /^while\b/ },
+    { type: "identifier", pattern: /^[a-zA-Z_][a-zA-Z0-9_]*/ },
+];
 function tokenize(code) {
     const tokens = [];
-    const regex = /\b(func)\b|=>|[a-zA-Z_]\w*|\d+|[+\-*\/=(),]|\s+/g;
-    let match;
+    let remaining = code;
     let line = 1;
     let column = 1;
-    while ((match = regex.exec(code))) {
-        const [value] = match;
-        const startIndex = match.index;
-        if (/\s+/.test(value)) {
-            // Handle whitespace
-            const newlines = value.split('\n').length - 1;
-            if (newlines > 0) {
-                line += newlines;
-                column = 1;
+    while (remaining.length > 0) {
+        let matched = false;
+        for (const { type, pattern, skip } of TOKEN_SPEC) {
+            const match = pattern.exec(remaining);
+            if (match && match.index === 0) {
+                if (!skip) {
+                    tokens.push({
+                        type,
+                        value: match[0],
+                        line,
+                        column
+                    });
+                }
+                // Update position tracking
+                const text = match[0];
+                const newlines = text.split('\n').length - 1;
+                if (newlines > 0) {
+                    line += newlines;
+                    column = text.length - text.lastIndexOf('\n');
+                }
+                else {
+                    column += text.length;
+                }
+                remaining = remaining.slice(text.length);
+                matched = true;
+                break;
             }
-            else {
-                column += value.length;
-            }
-            continue;
         }
-        const type = getTokenType(value);
-        tokens.push({
-            type,
-            value,
-            line,
-            column
-        });
-        column += value.length;
+        if (!matched) {
+            throw new Error(`Unknown token at ${line}:${column}: '${remaining[0]}'`);
+        }
     }
     return tokens;
-}
-function getTokenType(value) {
-    if (value === 'func')
-        return 'func';
-    if (value === '=>')
-        return 'arrow';
-    if (value === ',')
-        return 'comma'; // Add this line
-    if (/^[a-zA-Z_]/.test(value))
-        return 'identifier';
-    if (/^\d/.test(value))
-        return 'number';
-    if (/^[+\-*\/=]/.test(value))
-        return 'operator';
-    if (/^[()]/.test(value))
-        return 'paren';
-    throw new Error(`Unknown token: ${value}`);
 }

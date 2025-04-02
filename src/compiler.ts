@@ -22,15 +22,30 @@ export function compileChanyak(code: string): string {
             throw new Error("Invalid program structure");
         }
         
-        if (!ast.body.some(isFunctionDeclaration)) {
-            throw new Error("No valid function declarations found");
+        if (!ast.body.some(node => node.type === "FunctionDeclaration" && node.name === "main")) {
+            throw new Error("No valid 'main' function found.");
         }
+        
         
         // Generate JavaScript
         return generate(ast);
     } catch (error) {
-        const message = error instanceof Error ? error.message : "Unknown compilation error";
-        throw new Error(`Compilation failed: ${message}`);
+        // Improved error handling with proper type checking
+        let errorMessage: string;
+        if (error instanceof Error) {
+            errorMessage = error.message;
+        } else if (typeof error === 'string') {
+            errorMessage = error;
+        } else {
+            errorMessage = "Unknown compilation error";
+        }
+        
+        // Enhanced error message with potential position info
+        if (error instanceof Error && 'line' in error && 'column' in error) {
+            throw new Error(`Compilation failed at ${error.line}:${error.column} - ${errorMessage}`);
+        } else {
+            throw new Error(`Compilation failed: ${errorMessage}`);
+        }
     }
 }
 
@@ -39,23 +54,35 @@ function isFunctionDeclaration(node: ASTNode): node is Extract<ASTNode, { type: 
     return node.type === "FunctionDeclaration";
 }
 
-// CLI handler
+// Export for both CLI and module use
+export default {
+    compileChanyak
+};
+
+// CLI handler - only execute if run directly
 if (require.main === module) {
+    const { program } = require('commander');
     const fs = require('fs');
     const path = require('path');
-    
-    try {
-        const filePath = process.argv[2];
-        if (!filePath) {
-            console.error("Usage: ts-node compiler.ts <file.chan>");
-            process.exit(1);
-        }
-        
-        const code = fs.readFileSync(path.resolve(filePath), 'utf-8');
-        const jsCode = compileChanyak(code);
-        console.log(jsCode);
-    } catch (error) {
-        console.error(error instanceof Error ? error.message : "An unknown error occurred");
-        process.exit(1);
-    }
+
+    program
+        .command('compile <file>')
+        .action((file: string) => {
+            try {
+                const code = fs.readFileSync(path.resolve(file), 'utf-8');
+                console.log(compileChanyak(code));
+            } catch (error) {
+                // Improved CLI error handling
+                let errorMessage: string;
+                if (error instanceof Error) {
+                    errorMessage = error.message;
+                } else {
+                    errorMessage = String(error);
+                }
+                console.error("Compilation error:", errorMessage);
+                process.exit(1);
+            }
+        });
+
+    program.parse(process.argv);
 }

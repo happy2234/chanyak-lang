@@ -9,82 +9,81 @@ export class Parser {
     }
 
     parse(): ASTNode {
-        console.log("=== STARTING PARSING ===");
+        console.log("First token:", this.tokens[0]);  // 🔍 Debugging: Check first token
         const body: ASTNode[] = [];
         
-        // Skip any initial whitespace/comments
-        while (this.check("whitespace") || this.check("comment")) {
-            this.advance();
-        }
-
         while (!this.isAtEnd()) {
-            console.log(`Current token: ${this.peek().type} '${this.peek().value}'`);
-            
-            if (this.match("func")) {
-                console.log("Found function declaration");
-                const fn = this.parseFunction();
-                console.log("Parsed function:", JSON.stringify(fn, null, 2));
-                body.push(fn);
-            } else {
-                console.log("Skipping non-function token");
-                this.advance();
+            try {
+                console.log("Current token:", this.peek());  // 🔍 Debugging: Check current token before parsing
+                
+                if (this.match("func")) {
+                    body.push(this.parseFunction());
+                } else {
+                    this.advance();
+                }
+            } catch (error) {
+                const token = this.peek();
+                const message = error instanceof Error ? error.message : String(error);
+                throw new Error(`[${token.line}:${token.column}] ${message}`);
             }
-
-            // Skip whitespace/comments between declarations
-            while (this.check("whitespace") || this.check("comment")) {
-                this.advance();
-            }
-        }
-        
-        console.log("=== PARSING COMPLETE ===");
-        console.log(`Found ${body.length} functions`);
-        
-        if (body.length === 0) {
-            throw this.error(this.peek(), "No functions found in the code");
         }
         
         return { type: "Program", body };
     }
-
+    
     private parseFunction(): ASTNode {
-        console.log("Starting function parsing");
+        // The "func" keyword is already matched in parse(), so we don't consume it here
         const name = this.consume("identifier").value!;
-        console.log(`Function name: ${name}`);
         
         this.consume("paren", "(");
-        console.log("Started parameter list");
-        
         const params: string[] = [];
+    
+        // ✅ Parse function parameters
         if (!this.check("paren", ")")) {
             do {
-                const param = this.consume("identifier").value!;
-                params.push(param);
-                console.log(`Added parameter: ${param}`);
-                
+                params.push(this.consume("identifier").value!);
                 if (this.check("paren", ")")) break;
                 this.consume("comma");
             } while (true);
         }
-        
         this.consume("paren", ")");
-        console.log("Completed parameter list");
+    
+        this.consume("arrow", "=>"); // ✅ Ensure '=>' syntax
+        this.consume("brace", "{");  // ✅ Ensure function body starts with '{'
+    
+        const body: ASTNode[] = [];
+        while (!this.check("brace", "}") && !this.isAtEnd()) {
+            // ✅ Ensure return statements are properly handled
+            if (this.check("return")) {
+                body.push(this.parseReturnStatement());
+            } else {
+                body.push(this.parseStatement());
+            }
+        }
+    
+        this.consume("brace", "}"); // ✅ Ensure function body ends with '}'
+    
+        return { type: "FunctionDeclaration", name, params, body };
+    }
+    
+    
+    
+
+    private parseWhileStatement(): ASTNode {
+        this.consume("paren", "(");
+        const test = this.parseExpression();
+        this.consume("paren", ")");
         
-        this.consume("arrow", "=>");
-        console.log(`Parsing body for function ${name}`);
-        
-        const body = this.check("brace", "{") 
+        const body = this.check("brace", "{")
             ? this.parseBlock()
-            : [this.parseExpression()];
-        
-        console.log(`Completed function ${name}`);
+            : [this.parseStatement()];
+            
         return {
-            type: "FunctionDeclaration",
-            name,
-            params,
+            type: "WhileStatement",
+            test,
             body
         };
     }
-
     private parseBlock(): ASTNode[] {
         this.consume("brace", "{");
         const body: ASTNode[] = [];
@@ -98,16 +97,43 @@ export class Parser {
     }
 
     private parseStatement(): ASTNode {
-        if (this.match("identifier", "let")) {
-            return this.parseVariableDeclaration();
+        if (this.check("return")) {
+            return this.parseReturnStatement(); // ✅ Handle return statements properly
         }
-        if (this.match("identifier", "return")) {
-            return this.parseReturnStatement();
+    
+        if (this.check("print")) {
+            this.consume("print");
+            this.consume("paren", "(");
+            const value = this.parseExpression();
+            this.consume("paren", ")");
+            this.consume("semicolon"); // ✅ Ensure semicolon is consumed
+            return { type: "PrintStatement", value };
         }
-        if (this.match("identifier", "print")) {
-            return this.parsePrintStatement();
+        
+        if (this.check("identifier") && this.checkNext("paren", "(")) {
+            const expr = this.parseExpression();
+            this.consume("semicolon"); // ✅ Ensure function calls end with semicolon
+            return expr;
         }
-        return this.parseExpression();
+    
+        throw new Error(`Unexpected token ${this.peek().type} at ${this.peek().line}:${this.peek().column}`);
+    }
+    
+
+    private parseIfStatement(): ASTNode {
+        const test = this.parseExpression();
+        const consequent = this.check("brace", "{") 
+            ? this.parseBlock()
+            : [this.parseStatement()];
+        
+        let alternate;
+        if (this.match("else")) {
+            alternate = this.check("brace", "{") 
+                ? this.parseBlock()
+                : [this.parseStatement()];
+        }
+
+        return { type: "IfStatement", test, consequent, alternate };
     }
 
     private parseVariableDeclaration(): ASTNode {
@@ -123,13 +149,15 @@ export class Parser {
     }
 
     private parseReturnStatement(): ASTNode {
-        const value = this.parseExpression();
-        this.consume("operator", ";");
-        return {
-            type: "ReturnStatement",
-            value
-        };
+        this.consume("return"); // ✅ Consume 'return' keyword
+    
+        // ✅ Parse expressions properly
+        const value = this.parseExpression(); 
+    
+        this.consume("semicolon"); // ✅ Ensure semicolon at the end
+        return { type: "ReturnStatement", value };
     }
+    
 
     private parsePrintStatement(): ASTNode {
         this.consume("paren", "(");
@@ -141,42 +169,49 @@ export class Parser {
             value
         };
     }
-
     private parseExpression(): ASTNode {
-        let left = this.parsePrimary();
-        
-        while (this.match("operator", "+") || 
-               this.match("operator", "-") ||
-               this.match("operator", "*") ||
-               this.match("operator", "/")) {
+        let left = this.parsePrimary(); // Start with a primary expression (identifier, number, etc.)
+    
+        while (this.match("operator")) { // ✅ Handle binary operators like '+'
             const operator = this.previous().value!;
             const right = this.parsePrimary();
-            left = {
-                type: "BinaryExpression",
-                left,
-                right,
-                operator
-            };
+            left = { type: "BinaryExpression", operator, left, right };
         }
-        
+    
         return left;
     }
-
+    
     private parsePrimary(): ASTNode {
-        if (this.match("number")) {
-            return { type: "Literal", value: this.previous().value! };
-        }
         if (this.match("identifier")) {
-            return { type: "Literal", value: this.previous().value! };
+            const identifier = this.previous().value!;
+    
+            // Check if it's a function call
+            if (this.match("paren", "(")) {
+                const args: ASTNode[] = [];
+    
+                if (!this.check("paren", ")")) {
+                    do {
+                        args.push(this.parseExpression());
+                        if (this.check("paren", ")")) break;
+                        this.consume("comma");
+                    } while (true);
+                }
+                this.consume("paren", ")"); // Consume closing ')'
+                return { type: "CallExpression", name: identifier, arguments: args };
+
+            }
+    
+            return { type: "Identifier", name: identifier };
         }
-        if (this.match("paren", "(")) {
-            const expr = this.parseExpression();
-            this.consume("paren", ")");
-            return expr;
+    
+        if (this.match("number")) {
+            return { type: "NumberLiteral", value: parseFloat(this.previous().value!) };
         }
-        
-        throw this.error(this.peek(), "Expected expression");
+    
+        throw new Error(`[${this.peek().line}:${this.peek().column}] Unexpected token: '${this.peek().value}'`);
     }
+    
+    
 
     // Helper Methods
     private match(type: string, value?: string): boolean {
@@ -190,8 +225,10 @@ export class Parser {
     private check(type: string, value?: string): boolean {
         if (this.isAtEnd()) return false;
         const token = this.peek();
+        console.log(`Checking token: ${JSON.stringify(token)}, expected type: ${type}`);
         return token.type === type && (value === undefined || token.value === value);
     }
+    
 
     private advance(): Token {
         if (!this.isAtEnd()) this.current++;
@@ -200,7 +237,9 @@ export class Parser {
 
     private consume(type: string, value?: string): Token {
         if (this.check(type, value)) return this.advance();
-        throw this.error(this.peek(), `Expected ${type}${value ? ` '${value}'` : ''}`);
+        throw new Error(
+            `[${this.peek().line}:${this.peek().column}] Expected '${value || type}', found '${this.peek().value}'`
+        );
     }
 
     private isAtEnd(): boolean {
@@ -214,6 +253,12 @@ export class Parser {
     private previous(): Token {
         return this.tokens[this.current - 1];
     }
+    private checkNext(type: string, value?: string): boolean {
+        if (this.current + 1 >= this.tokens.length) return false; // No next token
+        const next = this.tokens[this.current + 1];
+        return next.type === type && (value === undefined || next.value === value);
+    }
+    
 
     private error(token: Token, message: string): Error {
         const location = token.line && token.column 
