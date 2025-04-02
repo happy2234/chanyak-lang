@@ -26,13 +26,30 @@ A modern compiler for the Chanyak programming language, transpiling to optimized
 - 🔜 Optimization passes
 - 🔜 Source maps
 
+
 ## Installation
 
+### Install Globally
+
+To install the Chanyak Language Compiler globally, run:
+
 ```bash
-# Install globally
-npm i chanyak-lang
+npm install -g chanyak-lang
+```
+
+### Use via npx
+
+Alternatively, you can use the compiler directly without installation:
+
+```bash
+npx chanyak-lang compile example.chan
+```
+
+---
 
 ## Development Setup
+
+To set up the project for development, follow these steps:
 
 ```bash
 git clone https://github.com/happy2234/chanyak-lang.git
@@ -40,6 +57,10 @@ cd chanyak-lang
 npm install
 npm run build
 ```
+
+---
+
+
 
 ## 📝 Example Program
 
