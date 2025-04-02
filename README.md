@@ -31,7 +31,7 @@ A modern compiler for the Chanyak programming language, transpiling to optimized
 ```bash
 # Install globally
 npm i chanyak-lang
-'''
+
 ## Development Setup
 
 ```bash
