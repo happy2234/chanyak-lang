@@ -30,12 +30,8 @@ A modern compiler for the Chanyak programming language, transpiling to optimized
 
 ```bash
 # Install globally
-npm install -g chanyak-compiler
-
-# Or use via npx
-npx chanyak-compiler compile example.chan
-```
-
+npm i chanyak-lang
+'''
 ## Development Setup
 
 ```bash
