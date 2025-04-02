@@ -1,65 +1,53 @@
 # Chanyak Language Compiler
-<!-- cspell:ignore Chanyak -->
 
-[![CI Status](https://github.com/happy2234/chanyak-lang/actions/workflows/ci.yml/badge.svg)](https://github.com/happy2234/chanyak-lang/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![npm version](https://img.shields.io/npm/v/chanyak-compiler)](https://www.npmjs.com/package/chanyak-compiler)
-[![TypeScript](https://img.shields.io/badge/TypeScript-4.9+-3178C6.svg)](https://www.typescriptlang.org/)
-A modern compiler for the Chanyak programming language, transpiling to efficient JavaScript.
-<!-- cspell:ignore Chanyak transpiling -->
-A modern compiler for the Chanyak programming language, transpiling to efficient JavaScript.
+[![CI Status](https://img.shields.io/github/actions/workflow/status/happy2234/chanyak-lang/ci.yml)](https://github.com/happy2234/chanyak-lang/actions)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![npm version](https://img.shields.io/npm/v/chanyak-compiler)](https://npmjs.com/package/chanyak-compiler)
+[![TypeScript](https://img.shields.io/badge/TypeScript-4.9%2B-blue)](https://www.typescriptlang.org/)
 
-### Language Syntax
+A modern compiler for the Chanyak programming language, transpiling to optimized JavaScript.
 
-| Feature              | Status |
-### Language Syntax
-| Feature              | Status |
-|----------------------|--------|
-| Functions            | ✅     |
-| Variables (let)      | ✅     |
-| Arithmetic ops       | ✅     |
-| Print statements     | ✅     |
-| If/else             | 🔜     |
-### Compiler Pipeline
+## Features
 
-| Stage                | Status |
+### Language Features
+- ✅ Functions with parameters
+- ✅ Variable declarations (`let`)
+- ✅ Arithmetic operations
+- ✅ Print statements
+- 🚧 If/else conditionals (in progress)
+- 🔜 Loops and iteration
+- 🔜 Type system
 
-### Compiler Pipeline
-| Stage                | Status |
-| JS Codegen           | ✅     |
-<!-- cspell:ignore Codegen -->
-| Lexer                | ✅     |
-| Parser               | ✅     |
-| AST Generation       | ✅     |
-| JS Codegen           | ✅     |
-### Installation
-| Source Maps          | ❌     |
-npm install -g chanyak-compiler
-<!-- cspell:ignore chanyak -->
-yarn global add chanyak-compiler
-<!-- cspell:ignore chanyak -->
+### Compiler Architecture
+- 🏗️ Lexical analysis
+- ✨ Syntax parsing
+- 📊 AST generation
+- ⚡ JavaScript code generation
+- 🔜 Optimization passes
+- 🔜 Source maps
 
-### Installation
+## Installation
+
 ```bash
+# Install globally
 npm install -g chanyak-compiler
-# or
-yarn global add chanyak-compiler
 
+# Or use via npx
+npx chanyak-compiler compile example.chan
+```
 
-cd chanyak-lang
-<!-- cspell:ignore chanyak -->
-'''bash
-node bin/chanyak.js compile examples/test.chan  
+## Development Setup
 
-### Development Setup
-'''bash
+```bash
 git clone https://github.com/happy2234/chanyak-lang.git
 cd chanyak-lang
 npm install
 npm run build
+```
 
-###  📝 Example Program
-'''bash
+## 📝 Example Program
+
+```javascript
 // examples/test.chan
 func add(a, b) => {
   return a + b
@@ -68,16 +56,16 @@ func add(a, b) => {
 func main() => {
   print(add(5, 3))
 }
+```
 
-###🤝 Contributing
+## 🤝 Contributing
 
 PRs welcome! Please:
 
-    Open an issue first
+1. Open an issue first.
+2. Follow the code style.
+3. Add tests for new features.
 
-    Follow the code style
+## 📜 License
 
-    Add tests for new features
-
-###📜 License
-This project is licensed under the Apache License 2.0. 
+This project is licensed under the Apache License 2.0.
